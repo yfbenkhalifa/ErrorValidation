@@ -6,18 +6,25 @@ using System.Threading.Tasks;
 
 namespace ErrorValidation.Model
 {
-    public interface IValidation
+    public interface IValidation<Entity>
     {
-        public bool Validate();
+        public bool Validate(Entity e);
         public bool IsValidated();
         public IEnumerable<ValidationError> GetValidationErrors();
         public IEnumerable<ValidationError> GetWarnings();
-        public IEnumerable<IValidationCheck> GetValidationChecks();
+        public IEnumerable<IValidationCheck<Entity>> GetValidationChecks();
         
 
     }
-    public interface IValidationCheck { 
-        public bool Validate();
+    public interface IValidationWarning {
+        public bool GetWarningMessage();
+    }
+    public interface IValidationError {
+        public string GetErrorMessage();
+        
+    }
+    public interface IValidationCheck<Entity> { 
+        public bool Validate(Entity e);
         public bool IsValidated();
         public IEnumerable<ValidationError> GetValidationErrors();
     }

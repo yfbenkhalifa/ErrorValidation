@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 namespace ErrorValidation.Model
 {
-    public class Validation : IValidation
+    public class Validation<Entity> : IValidation<Entity>
     {
         private bool _isValid;
 
-        private IEnumerable<IValidationCheck> _checks;
+        private IEnumerable<IValidationCheck<Entity>> _checks;
 
-        public IEnumerable<IValidationCheck> GetValidationChecks()
+        public IEnumerable<IValidationCheck<Entity>> GetValidationChecks()
         {
             throw new NotImplementedException();
         }
 
         public IEnumerable<ValidationError> GetValidationErrors()
         {
-            
+            throw new NotImplementedException();
         }
 
         public IEnumerable<ValidationError> GetWarnings()
@@ -29,11 +29,11 @@ namespace ErrorValidation.Model
 
         public bool IsValidated() => _isValid;
 
-        public bool Validate()
+        public bool Validate(Entity e)
         {
             _isValid = true;
-            foreach (ValidationCheck check in _checks) {
-                bool checkValidated = check.Validate();
+            foreach (ValidationCheck<Entity> check in _checks) {
+                bool checkValidated = check.Validate(e);
 
                 if (_isValid) _isValid = checkValidated;
             }
@@ -76,7 +76,7 @@ namespace ErrorValidation.Model
         public bool IsVerified() => _isVerified;
     }
 
-    public class ValidationCheck<Entity> : IValidationCheck
+    public class ValidationCheck<Entity> : IValidationCheck<Entity>
     {
         private ValidationResult _result;
         private ValidationCondition<Entity> _condition;
@@ -91,15 +91,18 @@ namespace ErrorValidation.Model
             throw new NotImplementedException();
         }
 
-        public bool Validate()
+        public bool Validate(Entity e)
         {
-            
+            bool checkVerified = _condition.Verify(e);
+            return checkVerified;
         }
     }
 
-    public class ValidationError
+    public class ValidationError : IValidationError
     {
         private string Description { get; set; }
         private string Message { get; set; }
+
+        public string GetErrorMessage() => Message;
     }
 }
