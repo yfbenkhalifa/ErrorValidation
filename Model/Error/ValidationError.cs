@@ -11,7 +11,7 @@ namespace ErrorValidation.Model
         private bool _isValid;
         
         private IEnumerable<ValidationCheck> _checks;
-        public IEnumerable<ValidationError> GetValidationChecks()
+        public IEnumerable<ValidationCheck> GetValidationChecks()
         {
             throw new NotImplementedException();
         }

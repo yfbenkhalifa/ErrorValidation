@@ -12,7 +12,7 @@ namespace ErrorValidation.Model
         public bool IsValidated();
         public IEnumerable<ValidationError> GetValidationErrors();
         public IEnumerable<ValidationError> GetWarnings();
-        public IEnumerable<ValidationError> GetValidationChecks();
+        public IEnumerable<ValidationCheck> GetValidationChecks();
         
 
     }
