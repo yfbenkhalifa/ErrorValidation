@@ -12,7 +12,7 @@ namespace ErrorValidation.Model
         public bool IsValidated();
         public IEnumerable<ValidationError> GetValidationErrors();
         public IEnumerable<ValidationError> GetWarnings();
-        public IEnumerable<ValidationCheck> GetValidationChecks();
+        public IEnumerable<IValidationCheck> GetValidationChecks();
         
 
     }
@@ -20,5 +20,11 @@ namespace ErrorValidation.Model
         public bool Validate();
         public bool IsValidated();
         public IEnumerable<ValidationError> GetValidationErrors();
+    }
+    public interface IValidationCondition<Entity> {
+        Func<Entity, bool> ConditionCheck { get; set; }
+
+        public bool Verify(Entity e);
+        public bool IsVerified();
     }
 }
