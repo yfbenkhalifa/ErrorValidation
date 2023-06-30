@@ -6,22 +6,41 @@ using System.Threading.Tasks;
 
 namespace ErrorValidation.Model
 {
+
+    public class ValidationFactory<Entity> : IValidationFactory<Entity> {
+        public IValidation<Entity> Create()
+        {
+            return new Validation<Entity>();
+        }
+
+        public IValidationCheck<Entity> CreateValidationCheck()
+        {
+            return new ValidationCheck<Entity>();
+        }
+
+        public IValidationFactory<Entity> Dispose()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class Validation<Entity> : IValidation<Entity>
     {
         private bool _isValid;
 
         public IEnumerable<IValidationCheck<Entity>> _checks;
 
-        public Validation()
-        {
-            _checks = new List<IValidationCheck<Entity>>();
-        }
-
         public void AddValidationCheck(IValidationCheck<Entity> check)
         {
             if (_checks == null) _checks = new List<IValidationCheck<Entity>>();
             _checks = _checks.Append(check);
         }
+
+        public void AddValidationCheck(IValidationCondition<Entity> condition, IValidationError error) {
+            if (_checks == null) _checks = new List<IValidationCheck<Entity>>();
+            _checks = _checks.Append(new ValidationCheck<Entity>(condition, error));
+        }
+
         public void RemoveValidationCheck(IValidationCheck<Entity> check) => _checks = _checks.Where(x => !x.Equals(check));
         
         public IEnumerable<IValidationCheck<Entity>> GetValidationChecks() => _checks;
@@ -65,6 +84,8 @@ namespace ErrorValidation.Model
             foreach(var check in _checks)
                 yield return check.Error.ToString();
         }
+
+       
     }
 
     public class ValidationResult {
@@ -81,17 +102,18 @@ namespace ErrorValidation.Model
 
     public class ValidationCondition<Entity> : IValidationCondition<Entity>{
         private bool _isVerified;
-        public Func<Entity, bool> ConditionCheck { get; set; }
+
+        public Func<Entity, object[]?, bool> ConditionCheck { get; set; }
         
-        public ValidationCondition(Func<Entity, bool> conditionCheck)
+        public ValidationCondition(Func<Entity, object[]?, bool> conditionCheck)
         {
             _isVerified = false;
             ConditionCheck = conditionCheck;
         }
 
-        public bool Verify(Entity e)
+        public bool Verify(Entity e, object[]? paramters)
         {
-            _isVerified = ConditionCheck(e);
+            _isVerified = ConditionCheck(e, paramters);
             return _isVerified;
         }
 
@@ -102,12 +124,15 @@ namespace ErrorValidation.Model
     {
         private IValidationCondition<Entity> _condition;
         private IValidationError _error;
-        public IValidationError Error { get => _error; set => _error = value; }
+        private ValidationCheckStatus _status;
+
+        public ValidationCheck() => _status = ValidationCheckStatus.NotValidated;
 
         public ValidationCheck(IValidationCondition<Entity> condition, IValidationError error)
         {
             _condition = condition;
             _error = error;
+            _status = ValidationCheckStatus.NotValidated;
         }
 
         public bool IsValidated() => _condition.IsVerified();
@@ -118,6 +143,11 @@ namespace ErrorValidation.Model
             return checkVerified;
         }
 
+        public void SetCondition(IValidationCondition<Entity> condition) => _condition = condition;
+
+        public void SetError(IValidationError error) => _error = error;
+
+        public IValidationError Error => _error;
     }
 
     public class ValidationError : IValidationError
