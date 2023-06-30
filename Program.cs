@@ -5,39 +5,58 @@ namespace ErrorValidation.UnitTest
 {
     public class Pi
     {
-        public double value { get; set; }
+        public int value { get; set; }
     }
 
     public class ErrorValidationTest
     {
-        public static bool IsCorrect(Pi p) => p.value == 3.14;
-        public static bool IsDouble(Pi p) => Double.TryParse(p.value.ToString(), out _);
+        
+        public class PiValueValidation : IValidation<Pi> {
+            public IEnumerable<IValidationError> GetValidationErrors()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerable<IValidationError> GetWarnings()
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsValidated()
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool Validate(Pi p) => Math.Abs(p.value) == 3;
+        }
+        public class PiDoubleValidation : IValidation<Pi>
+        {
+            public IEnumerable<IValidationError> GetValidationErrors()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerable<IValidationError> GetWarnings()
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsValidated()
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool Validate(Pi e) => e.value > 0;
+        }
         static void Main(string[] args)
         {
-            Pi pi = new Pi { value = 1 };
+            Pi pi = new Pi { value = -3 };
+            
+            PiValidation validation = new PiValidation();
+            validation.AddValidation(new PiValueValidation());
+            validation.AddValidation(new PiDoubleValidation());
+            Console.WriteLine(validation.Validate(pi));
 
-            // Decalre validation
-            Validation<Pi> PiValidation = new Validation<Pi>();
-            // Create checks to validate
-            ValidationCondition<Pi> piIsCorrect = new ValidationCondition<Pi>(IsCorrect);
-            ValidationError validationError = new ValidationError("PI Error Value", "Valore del pi greco non valido");
-
-            var piIsDouble = new ValidationCondition<Pi>(IsDouble);
-            var piIsDoubleError = new ValidationError("Pi Invalid Format", "Tipologia pi graco non valida");
-
-            ValidationCheck<Pi> valueCheck = new ValidationCheck<Pi>(piIsCorrect, validationError);
-            var typeCheck = new ValidationCheck<Pi>(piIsDouble, piIsDoubleError);
-
-            // Add check to Validation
-            PiValidation.AddValidationCheck(valueCheck);
-            PiValidation.AddValidationCheck(typeCheck);
-
-            // Perform validation
-            Console.WriteLine("Validation Result : " + PiValidation.Validate(pi));
-            var errors = PiValidation.GetValidationErrors();
-            foreach (var error in errors) {
-                Console.WriteLine(error.ToString());
-            }
         }
 
         
