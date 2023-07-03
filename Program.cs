@@ -10,11 +10,18 @@ namespace ErrorValidation.UnitTest
 
     public class ErrorValidationTest
     {
-        
-        public class PiValueValidation : IValidation<Pi> {
+
+        public class PiValueValidation : IValidation<Pi>
+        {
+            private bool _isValidated;
+            public IValidationError GetValidationError()
+            {
+                return new ValidationError("Value Error", "Valore non valido");
+            }
+
             public IEnumerable<IValidationError> GetValidationErrors()
             {
-                throw new NotImplementedException();
+                return new List<IValidationError>() { GetValidationError() };
             }
 
             public IEnumerable<IValidationError> GetWarnings()
@@ -22,18 +29,26 @@ namespace ErrorValidation.UnitTest
                 throw new NotImplementedException();
             }
 
-            public bool IsValidated()
-            {
-                throw new NotImplementedException();
-            }
+            public bool IsValidated() => _isValidated;
 
-            public bool Validate(Pi p) => Math.Abs(p.value) == 3;
+            public bool Validate(Pi p)
+            {
+                _isValidated = Math.Abs(p.value) == 2;
+                return _isValidated;
+            }
         }
         public class PiDoubleValidation : IValidation<Pi>
         {
+            private bool _isValidated;
+
+            public IValidationError GetValidationError()
+            {
+                return new ValidationError("Type Error", "Tipo variabile non valido");
+            }
+
             public IEnumerable<IValidationError> GetValidationErrors()
             {
-                throw new NotImplementedException();
+                return new List<IValidationError> { GetValidationError()};
             }
 
             public IEnumerable<IValidationError> GetWarnings()
@@ -41,21 +56,32 @@ namespace ErrorValidation.UnitTest
                 throw new NotImplementedException();
             }
 
-            public bool IsValidated()
-            {
-                throw new NotImplementedException();
-            }
+            public bool IsValidated() => _isValidated;
 
-            public bool Validate(Pi e) => e.value > 0;
+            public bool Validate(Pi e)
+            {
+                _isValidated = e.value > 0;
+                return _isValidated;
+            }
         }
         static void Main(string[] args)
         {
-            Pi pi = new Pi { value = -3 };
+            Pi pi = new Pi { value = 2 };
             
             PiValidation validation = new PiValidation();
             validation.AddValidation(new PiValueValidation());
             validation.AddValidation(new PiDoubleValidation());
-            Console.WriteLine(validation.Validate(pi));
+            bool ok = validation.Validate(pi);
+            if (!ok)
+            {
+                foreach (var error in validation.GetValidationErrors())
+                {
+                    Console.WriteLine($"\n{error.Description} : {error.ErrorMessage}");
+                }
+            }
+            else {
+                Console.WriteLine("OK");
+            }
 
         }
 

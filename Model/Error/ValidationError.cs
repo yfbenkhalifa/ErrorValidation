@@ -24,48 +24,57 @@ namespace ErrorValidation.Model
             return this;
         }
 
-        public IEnumerable<IValidationError> GetValidationErrors()
-        {
-            throw new NotImplementedException();
-        }
 
         public IEnumerable<IValidationError> GetWarnings()
         {
             throw new NotImplementedException();
         }
 
-        public bool IsValidated()
-        {
-            throw new NotImplementedException();
-        }
-
-       
+        public bool IsValidated() => _isValidated;
 
         public bool Validate(Pi e)
         {
-            _isValidated = true;
+            int errors = 0;
             foreach (var validation in _validations)
             {
-                _isValidated = validation.Validate(e);
+                if(!validation.Validate(e)) errors ++;
             }
+            _isValidated = errors == 0;
             return _isValidated;
+        }
+
+        public IEnumerable<IValidationError> GetValidationErrors()
+        {
+            foreach (var validation in _validations) {
+                if (!validation.IsValidated()) yield return validation.GetValidationError();
+            }
+        }
+
+        public IValidationError GetValidationError()
+        {
+            return new ValidationError("Pi Validation Failure", "Check Validation errors");
         }
     }
 
     public class ValidationError : IValidationError
     {
-        private string Description { get; set; }
-        private string Message { get; set; }
+        public string Description { get; set; }
+        public string ErrorMessage { get; set; }
+        public string WarningMessage { get; set; }
+
+        public ValidationResult Result { get; private set; }
 
         public ValidationError(string description, string message)
         {
             Description = description;
-            Message = message;
+            ErrorMessage = message;
+            Result = ValidationResult.NotValidated;
         }
         public override string ToString()
         {
-            return $"\n{Description}: {Message}";
+            return $"\n{Description}: {ErrorMessage}";
         }
-        public string GetErrorMessage() => Message;
+
+        public void SetResult(ValidationResult result) => Result = result;
     }
 }
